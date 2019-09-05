@@ -1681,6 +1681,7 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
         // ReSharper disable once FunctionComplexityOverflow
         public void refreshEntity_Click(object sender, EventArgs e)
         {
+            TreeNodeExpandedState expandedState = null;
             try
             {
                 serviceBusTreeView.SuspendDrawing();
@@ -1727,6 +1728,9 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                     {
                         return;
                     }
+
+                    expandedState = TreeNodeExpandedState.Save(serviceBusTreeView.SelectedNode);
+
                     // Queue Node
                     var tag = serviceBusTreeView.SelectedNode.Tag as QueueDescription;
                     if (tag != null)
@@ -1827,7 +1831,6 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                     // Partitions Node
                     if (serviceBusTreeView.SelectedNode.Text == PartitionEntities)
                     {
-                        var isExpanded = serviceBusTreeView.SelectedNode.IsExpanded;
                         var eventHubDescription = serviceBusTreeView.SelectedNode.Tag as EventHubDescription;
                         if (eventHubDescription == null)
                         {
@@ -1842,16 +1845,11 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                             return;
                         }
                         serviceBusTreeView.SelectedNode = partitionsNode;
-                        if (isExpanded)
-                        {
-                            partitionsNode.Expand();
-                        }
                         return;
                     }
                     // Consumer Groups Node
                     if (serviceBusTreeView.SelectedNode.Text == ConsumerGroupEntities)
                     {
-                        var isExpanded = serviceBusTreeView.SelectedNode.IsExpanded;
                         var eventHubDescription = serviceBusTreeView.SelectedNode.Tag as EventHubDescription;
                         if (eventHubDescription == null)
                         {
@@ -1868,10 +1866,6 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                             return;
                         }
                         serviceBusTreeView.SelectedNode = consumerGroupsNode;
-                        if (isExpanded)
-                        {
-                            consumerGroupsNode.Expand();
-                        }
                         return;
                     }
                     // Event Hub Node
@@ -2068,6 +2062,8 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
             }
             finally
             {
+                expandedState?.Restore(serviceBusTreeView.SelectedNode);
+
                 serviceBusTreeView.ResumeDrawing();
                 serviceBusTreeView.ResumeLayout();
                 serviceBusTreeView.EndUpdate();
@@ -2080,8 +2076,6 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
             var ruleDescriptions = rules as RuleDescription[] ?? rules.ToArray();
             if (!ruleDescriptions.Any())
                 return;
-            var subscriptionNodeWasExpanded = subscriptionNode.IsExpanded;
-            var rulesNodeWasExpanded = subscriptionNode.Nodes.Count > 0 && subscriptionNode.Nodes[0].IsExpanded;
             subscriptionNode.Nodes.Clear();
             var rulesNode = subscriptionNode.Nodes.Add(RuleEntities, RuleEntities, RuleListIconIndex, RuleListIconIndex);
             rulesNode.ContextMenuStrip = rulesContextMenuStrip;
@@ -2093,16 +2087,10 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                 ruleNode.Tag = new RuleWrapper(rule, subscriptionDescription);
                 WriteToLog(string.Format(CultureInfo.CurrentCulture, RuleRetrievedFormat, rule.Name, subscriptionDescription.Name, subscriptionDescription.TopicPath), false);
             }
-            if (rulesNodeWasExpanded)
-                rulesNode.Expand();
-            if (subscriptionNodeWasExpanded)
-                subscriptionNode.Expand();
         }
 
         private void RefreshIndividualTopic(TreeNode selectedNode)
         {
-            var wasTopicNodeExpanded = selectedNode.IsExpanded;
-
             var topicDescription = selectedNode.Tag as TopicDescription;
 
             var subscriptions = serviceBusHelper.GetSubscriptions(topicDescription, null);
@@ -2138,9 +2126,6 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
 
                 RefreshIndividualSubscription(subscriptionDescription, subscriptionNode);
             }
-
-            if (wasTopicNodeExpanded)
-                selectedNode.Expand();
         }
 
         private void createEntity_Click(object sender, EventArgs e)
@@ -4272,6 +4257,7 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                     serviceBusTreeView.SuspendLayout();
                     serviceBusTreeView.BeginUpdate();
                     treeNodesToLazyLoad = new List<TreeNode>();
+                    var expandedState = TreeNodeExpandedState.Save(serviceBusTreeView);
                     var queueListNode = FindNode(Constants.QueueEntities, rootNode);
                     var topicListNode = FindNode(Constants.TopicEntities, rootNode);
                     var eventHubListNode = FindNode(Constants.EventHubEntities, rootNode);
@@ -4505,6 +4491,9 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                             serviceBusTreeView.Nodes.Remove(queueListNode);
                         }
                     }
+
+                    expandedState.Restore(serviceBusTreeView);
+
                     queueListNode?.Expand();
                     topicListNode?.Expand();
                     eventHubListNode?.Expand();
