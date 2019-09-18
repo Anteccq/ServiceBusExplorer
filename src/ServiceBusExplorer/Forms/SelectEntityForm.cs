@@ -23,6 +23,7 @@
 
 using System;
 using System.Drawing;
+using System.Linq;
 using System.Windows.Forms;
 using Microsoft.Azure.NotificationHubs;
 using Microsoft.Azure.ServiceBusExplorer.Helpers;
@@ -158,6 +159,8 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
         private void SelectEntityForm_Load(object sender, EventArgs e)
         {
             // Select the queue where it is coming from since that is likely where it will go
+            TreeNode selectedNode = null;
+
             if (queueDescriptionSource != null)
             {
                 foreach (TreeNode rootNode in serviceBusTreeView.Nodes)
@@ -166,22 +169,10 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                     {
                         if (level1Node.Text == QueueEntities)
                         {
-                            foreach (TreeNode level2Node in level1Node.Nodes)
-                            {
-                                var queueTag = level2Node.Tag as QueueDescription;
-                                if (queueTag != null)
-                                {
-                                    if (string.Compare(queueTag.Path, queueDescriptionSource.Path,
-                                        StringComparison.InvariantCultureIgnoreCase) == 0)
-                                    {
-                                        serviceBusTreeView.HideSelection = false;
-                                        serviceBusTreeView.Focus();  // Otherwise the node will be light gray
-                                        serviceBusTreeView.SelectedNode = level2Node;
-                                        SetTextAndType(level2Node);
-                                        return;
-                                    }
-                                }
-                            }
+                            selectedNode = FindNodeRecursive(level1Node,
+                                node => node.Tag is QueueDescription desc &&
+                                    string.Equals(desc.Path, queueDescriptionSource.Path,
+                                        StringComparison.OrdinalIgnoreCase));
                         }
                     }
                 }
@@ -194,24 +185,38 @@ namespace Microsoft.Azure.ServiceBusExplorer.Forms
                     {
                         if (level1Node.Text == TopicEntities)
                         {
-                            foreach (TreeNode level2Node in level1Node.Nodes)
-                            {
-                                var topicTag = level2Node.Tag as TopicDescription;
-                                if (topicTag != null)
-                                {
-                                    if (topicTag.Path == subscriptionWrapperSource.TopicDescription.Path)
-                                    {
-                                        serviceBusTreeView.HideSelection = false;
-                                        serviceBusTreeView.Focus();  // Otherwise the node will be light gray
-                                        serviceBusTreeView.SelectedNode = level2Node;
-                                        SetTextAndType(level2Node);
-                                        return;
-                                    }
-                                }
-                            }
+                            selectedNode = FindNodeRecursive(level1Node,
+                                node => node.Tag is TopicDescription desc &&
+                                    string.Equals(desc.Path, subscriptionWrapperSource.TopicDescription.Path,
+                                        StringComparison.OrdinalIgnoreCase));
                         }
                     }
                 }
+            }
+
+            if (selectedNode != null)
+            {
+                serviceBusTreeView.HideSelection = false;
+                serviceBusTreeView.Focus();  // Otherwise the node will be light gray
+                serviceBusTreeView.SelectedNode = selectedNode;
+                SetTextAndType(selectedNode);
+            }
+
+            TreeNode FindNodeRecursive(TreeNode node, Func<TreeNode, bool> predicate)
+            {
+                foreach (var child in node.Nodes.Cast<TreeNode>())
+                {
+                    if (predicate(child))
+                    {
+                        return child;
+                    }
+
+                    var found = FindNodeRecursive(child, predicate);
+                    if (found != null)
+                        return found;
+                }
+
+                return null;
             }
         }
 
