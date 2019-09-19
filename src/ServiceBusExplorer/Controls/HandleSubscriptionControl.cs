@@ -803,23 +803,17 @@ namespace Microsoft.Azure.ServiceBusExplorer.Controls
             // ForwardTo
             if (!string.IsNullOrWhiteSpace(subscriptionWrapper.SubscriptionDescription.ForwardTo))
             {
-                int i;
-                txtForwardTo.Text = !string.IsNullOrWhiteSpace(subscriptionWrapper.SubscriptionDescription.ForwardTo) &&
-                                    (i = subscriptionWrapper.SubscriptionDescription.ForwardTo.IndexOf('/')) > 0 &&
-                                    i < subscriptionWrapper.SubscriptionDescription.ForwardTo.Length - 1 ?
-                                    subscriptionWrapper.SubscriptionDescription.ForwardTo.Substring(subscriptionWrapper.SubscriptionDescription.ForwardTo.LastIndexOf('/') + 1) :
-                                    subscriptionWrapper.SubscriptionDescription.ForwardTo;
+                txtForwardTo.Text = Uri.IsWellFormedUriString(subscriptionWrapper.SubscriptionDescription.ForwardTo, UriKind.Absolute)
+                    ? new Uri(subscriptionWrapper.SubscriptionDescription.ForwardTo).AbsolutePath.TrimStart('/')
+                    : subscriptionWrapper.SubscriptionDescription.ForwardTo;
             }
 
             // ForwardDeadLetteredMessagesTo
             if (!string.IsNullOrWhiteSpace(subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo))
             {
-                int i;
-                txtForwardDeadLetteredMessagesTo.Text = !string.IsNullOrWhiteSpace(subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo) &&
-                                    (i = subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo.IndexOf('/')) > 0 &&
-                                    i < subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo.Length - 1 ?
-                                    subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo.Substring(subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo.LastIndexOf('/') + 1) :
-                                    subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo;
+                txtForwardDeadLetteredMessagesTo.Text = Uri.IsWellFormedUriString(subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo, UriKind.Absolute)
+                    ? new Uri(subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo).AbsolutePath.TrimStart('/')
+                    : subscriptionWrapper.SubscriptionDescription.ForwardDeadLetteredMessagesTo;
             }
 
             // MaxDeliveryCount

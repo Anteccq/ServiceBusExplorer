@@ -1216,27 +1216,17 @@ namespace Microsoft.Azure.ServiceBusExplorer.Controls
             // ForwardTo
             if (!string.IsNullOrWhiteSpace(queueDescription.ForwardTo))
             {
-                int i;
-                txtForwardTo.Text = !string.IsNullOrWhiteSpace(queueDescription.ForwardTo) &&
-                                    (i = queueDescription.ForwardTo.IndexOf('/')) > 0 &&
-                                    i < queueDescription.ForwardTo.Length - 1
-                    ? queueDescription.ForwardTo.Substring(queueDescription.ForwardTo.LastIndexOf('/') + 1)
+                txtForwardTo.Text = Uri.IsWellFormedUriString(queueDescription.ForwardTo, UriKind.Absolute)
+                    ? new Uri(queueDescription.ForwardTo).AbsolutePath.TrimStart('/')
                     : queueDescription.ForwardTo;
-
             }
 
             // ForwardDeadLetteredMessagesTo
             if (!string.IsNullOrWhiteSpace(queueDescription.ForwardDeadLetteredMessagesTo))
             {
-                int i;
-                txtForwardDeadLetteredMessagesTo.Text =
-                    !string.IsNullOrWhiteSpace(queueDescription.ForwardDeadLetteredMessagesTo) &&
-                    (i = queueDescription.ForwardDeadLetteredMessagesTo.IndexOf('/')) > 0 &&
-                    i < queueDescription.ForwardDeadLetteredMessagesTo.Length - 1
-                        ? queueDescription.ForwardDeadLetteredMessagesTo.Substring(
-                            queueDescription.ForwardDeadLetteredMessagesTo.LastIndexOf('/') + 1)
-                        : queueDescription.ForwardDeadLetteredMessagesTo;
-
+                txtForwardDeadLetteredMessagesTo.Text = Uri.IsWellFormedUriString(queueDescription.ForwardDeadLetteredMessagesTo, UriKind.Absolute)
+                    ? new Uri(queueDescription.ForwardDeadLetteredMessagesTo).AbsolutePath.TrimStart('/')
+                    : queueDescription.ForwardDeadLetteredMessagesTo;
             }
 
             // MaxQueueSizeInBytes
