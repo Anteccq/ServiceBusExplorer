@@ -242,7 +242,7 @@ namespace Microsoft.Azure.ServiceBusExplorer.Controls
                 cboBrokeredMessageGeneratorType.Items.Add(SelectBrokeredMessageGenerator);
                 cboBrokeredMessageGeneratorType.SelectedIndex = 0;
                 cboMessageFormat.Items.AddRange(new[] { "Text", "JSON", "XML" });
-                cboMessageFormat.SelectedIndex = 0;
+                cboMessageFormat.SelectedIndex = 1;
 
                 if (serviceBusHelper != null)
                 {
@@ -277,6 +277,9 @@ namespace Microsoft.Azure.ServiceBusExplorer.Controls
                     }
                     btnClearFiles.Enabled = messageFileListView.Items.Count > 0;
                 }
+
+                // Set default value to ContentType
+                txtContentType.Text = "application/json";
 
                 // Set Think Time
                 txtSenderThinkTime.Text = mainForm.SenderThinkTime.ToString(CultureInfo.InvariantCulture);
